@@ -2,7 +2,7 @@
 
 namespace Ngg_Path_Fix;
 
-class Admin
+class AdminPage
 {
     private static $instance = null;
     protected $listTable;
@@ -15,10 +15,18 @@ class Admin
     public static function boot()
     {
         if (!self::$instance) {
-            self::$instance = new Admin();
+            self::$instance = new AdminPage();
         }
 
         return self::$instance;
+    }
+
+    public static function clearGeneralOptions($options)
+    {
+        $options['per_page'] = (isset($options['per_page']) && (int)$options['per_page'] > 0) ? $options['per_page'] : 10;
+        $options['current_page'] = (isset($options['current_page']) && (int)$options['current_page'] > 1) ? $options['current_page'] : 1;
+
+        return $options;
     }
 
     protected function addActions()
@@ -63,7 +71,5 @@ class Admin
     {
         $this->listTable->prepare_items();
         $this->listTable->display();
-
     }
-
 }
