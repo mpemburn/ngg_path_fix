@@ -13,25 +13,14 @@ class SubsiteTable extends \WP_List_Table
         return [
             'blog_id' => __('Blog ID', 'npf'),
             'name' => __('Name', 'npf'),
-            'theme' => __('Theme', 'npf'),
+            'siteurl' => __('URL', 'npf'),
             'modified' => __('Last Update', 'npf'),
-            'pages' => __('Pages', 'npf'),
-            'posts' => __('Posts', 'npf'),
-            'users' => __('Users', 'npf'),
-            'cats' => __('Categories', 'npf')
+            'galleries' => __('Galleries', 'npf'),
         ];
     }
 
-    // function __construct() {
-
-    // }
-
     public function prepare_items(): void
     {
-//        $columns = $this->get_columns();
-//        $hidden = array();
-//        $sortable = $this->get_sortable_columns();
-
         $this->_column_headers = $this->get_column_info();
 
         // pagination
@@ -54,7 +43,7 @@ class SubsiteTable extends \WP_List_Table
 
     public function no_items(): void
     {
-        _e('This network contains no blogs.', 'uri');
+        _e('This network contains no matching blogs.', 'uri');
     }
 
     public function _is_sortable($column_name): bool
@@ -69,12 +58,9 @@ class SubsiteTable extends \WP_List_Table
         $sortable_columns = [
             'blog_id' => ['blog_id', false],
             'name' => ['name', false],
-            'theme' => ['theme', false],
+            'siteurl' => ['siteurl', false],
             'modified' => ['modified', false],
-            'pages' => ['pages', false],
-            'posts' => ['posts', false],
-            'users' => ['users', false],
-            'cats' => ['cats', false]
+            'galleries' => ['galleries', false],
         ];
 
         return $sortable_columns;
@@ -82,13 +68,13 @@ class SubsiteTable extends \WP_List_Table
 
     public function column_name($item): string
     {
-        $text = sprintf('<a href="%s">%s</a>', $item['url'], $item['name']);
-        $actions = array(
-            'edit' => sprintf('<a href="/wordpress/wp-admin/network/site-info.php?id=%s">%s</a>', $item['blog_id'], 'Edit'),
-            'settings' => sprintf('<a href="/wordpress/wp-admin/network/site-settings.php?id=%s">%s</a>', $item['blog_id'], 'Settings'),
-        );
+        $text = sprintf('<a href="%s">%s</a>', '/wp-admin/network/admin.php?page=fix-paths&blog_id=' . $item['blog_id'], $item['name']);
+//        $actions = array(
+//            'edit' => sprintf('<a href="/wordpress/wp-admin/network/site-info.php?id=%s">%s</a>', $item['blog_id'], 'Edit'),
+//            'settings' => sprintf('<a href="/wordpress/wp-admin/network/site-settings.php?id=%s">%s</a>', $item['blog_id'], 'Settings'),
+//        );
 
-        return sprintf('%1$s %2$s', $text, $this->row_actions($actions));
+        return sprintf('%1$s', $text);
     }
 
     public function column_default($item, $column_name)

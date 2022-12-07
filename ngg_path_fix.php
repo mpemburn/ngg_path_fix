@@ -16,9 +16,8 @@ namespace Ngg_Path_Fix;
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Ngg_Path_Fix\AdminPage;
-use Ngg_Path_Fix\FixPaths;
+//use Ngg_Path_Fix\FixPaths;
 
 AdminPage::boot();
-FixPaths::boot();
 
 

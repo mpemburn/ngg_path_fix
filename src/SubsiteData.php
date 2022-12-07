@@ -4,7 +4,7 @@ namespace Ngg_Path_Fix;
 
 class SubsiteData
 {
-    public function getSubsites($options)
+    public function getSubsites($options): array
     {
         global $wpdb;
 
@@ -25,19 +25,21 @@ class SubsiteData
                 continue;
             }
 
-            $prefix = $wpdb->base_prefix;
-            $bid = $wpdb->get_blog_prefix($blog_row->blog_id);
+            $blogId = $wpdb->get_blog_prefix($blog_row->blog_id);
+
+            $galleriesSql = "SELECT COUNT(gid) AS gid_count  FROM {$blogId}ngg_gallery";
+            if (! $this->hasGalleries($galleriesSql)) {
+                continue;
+            }
+
             $sql = "SELECT option_value AS home,
-					(SELECT option_value FROM {$bid}options WHERE option_name='siteurl') AS url,
-					(SELECT option_value FROM {$bid}options WHERE option_name='blogname') AS name,
-					(SELECT option_value FROM {$bid}options WHERE option_name='template') AS theme,
-					(SELECT post_modified FROM {$bid}posts ORDER BY post_modified DESC LIMIT 1) AS modified,
-					(SELECT COUNT(ID) FROM {$bid}posts WHERE post_status = 'publish' AND post_type='page') AS pages,
-					(SELECT COUNT(ID) FROM {$bid}posts WHERE post_status = 'publish' AND post_type='post') AS posts,
-					(SELECT COUNT(term_id) FROM {$bid}terms) AS cats,
-					(SELECT COUNT(user_id) FROM {$prefix}usermeta WHERE meta_key = '{$bid}capabilities' AND meta_value NOT LIKE '%subscriber%') AS users,
+					(SELECT option_value FROM {$blogId}options WHERE option_name='siteurl') AS url,
+					(SELECT option_value FROM {$blogId}options WHERE option_name='blogname') AS name,
+					(SELECT option_value FROM {$blogId}options WHERE option_name='siteurl') AS siteurl,
+					(SELECT post_modified FROM {$blogId}posts ORDER BY post_modified DESC LIMIT 1) AS modified,
+					({$galleriesSql}) AS galleries,
 					CAST({$blog_row->blog_id} AS UNSIGNED INTEGER ) AS blog_id
-			FROM {$bid}options
+			FROM {$blogId}options
 			WHERE option_name = 'home'";
 
             $records = array_merge($records, $wpdb->get_results($sql, ARRAY_A));
@@ -50,6 +52,12 @@ class SubsiteData
         if ($wpdb->last_error) {
             echo 'DB Error: ' . $wpdb->last_error;
         }
+//        // TODO: Avoid this workaround by fixing SQL
+//        foreach ($records as $key => $blog) {
+//            if ((int)$blog['galleries'] === 0) {
+//                unset($records[$key]);
+//            }
+//        }
 
         return $records;
     }
@@ -57,6 +65,15 @@ class SubsiteData
     protected function getBlogs(): array
     {
         return get_sites(['archived' => 0]);
+    }
+
+    protected function hasGalleries(string $sql): bool
+    {
+        global $wpdb;
+
+        $results = $wpdb->get_results($sql, ARRAY_A);
+
+        return (int)current($results)['gid_count'] > 0;
     }
 
 }

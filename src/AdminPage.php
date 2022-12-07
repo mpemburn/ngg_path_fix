@@ -21,7 +21,7 @@ class AdminPage
         return self::$instance;
     }
 
-    public static function clearGeneralOptions($options)
+    public static function clearGeneralOptions($options): array
     {
         $options['per_page'] = (isset($options['per_page']) && (int)$options['per_page'] > 0) ? $options['per_page'] : 10;
         $options['current_page'] = (isset($options['current_page']) && (int)$options['current_page'] > 1) ? $options['current_page'] : 1;
@@ -29,18 +29,19 @@ class AdminPage
         return $options;
     }
 
-    protected function addActions()
+    protected function addActions(): void
     {
-        add_action('network_admin_menu', [$this, 'addListPage']);
         add_action('network_admin_menu', [$this, 'addMenuPage']);
+        add_action('network_admin_menu', [$this, 'addPathFixPage']);
+        add_action('network_admin_menu', [$this, 'addListPage']);
     }
 
-    public function addListPage()
+    public function addListPage(): void
     {
         $this->listTable = new SubsiteTable();
     }
 
-    public function addMenuPage()
+    public function addMenuPage(): void
     {
         $hook = add_menu_page(
             __('NGG Path Fixer', 'uri'),
@@ -55,7 +56,18 @@ class AdminPage
         add_action('load-' . $hook, [$this, 'addAdminAddOptions']);
     }
 
-    public function addAdminAddOptions()
+    public function addPathFixPage(): void
+    {
+        add_options_page(
+            'Fix Paths',
+            '',
+            'manage_options',
+            'fix-paths',
+            [new FixPaths(), 'render']
+        );
+    }
+
+    public function addAdminAddOptions(): void
     {
         $option = 'per_page';
         $args = array(
@@ -67,7 +79,7 @@ class AdminPage
         add_screen_option($option, $args);
     }
 
-    public function showListPage()
+    public function showListPage(): void
     {
         $this->listTable->prepare_items();
         $this->listTable->display();
