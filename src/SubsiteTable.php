@@ -32,7 +32,7 @@ class SubsiteTable extends \WP_List_Table
         );
 
         $this->set_pagination_args(array(
-            'total_items' => uri_network_blogs_count(),
+            'total_items' => $this->blogsCount(),
             'per_page' => $options['per_page']
         ));
 
@@ -88,5 +88,10 @@ class SubsiteTable extends \WP_List_Table
                 return $item[$column_name];
             // return print_r( $item, true ) ; //Show the whole array for troubleshooting purposes
         }
+    }
+
+    protected function blogsCount(): int
+    {
+        return get_sites(['count' => true, 'archived' => 0]);
     }
 }
