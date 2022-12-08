@@ -34,6 +34,10 @@ class AdminPage
         add_action('network_admin_menu', [$this, 'addMenuPage']);
         add_action('network_admin_menu', [$this, 'addPathFixPage']);
         add_action('network_admin_menu', [$this, 'addListPage']);
+        add_action('wp_ajax_nopriv_load_gallery_images', [new FixPaths(), 'loadGalleryImages']);
+        add_action('wp_ajax_load_gallery_images', [new FixPaths(), 'loadGalleryImages']);
+        add_action('wp_ajax_nopriv_update_gallery_path', [new FixPaths(), 'updateGalleryPath']);
+        add_action('wp_ajax_update_gallery_path', [new FixPaths(), 'updateGalleryPath']);
     }
 
     public function addListPage(): void

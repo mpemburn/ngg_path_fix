@@ -4,10 +4,14 @@ namespace Ngg_Path_Fix;
 
 class FixPaths
 {
-    protected string $blogBasePath;
+    protected ?string $blogBasePath;
 
     public function __construct()
     {
+        if (! isset($_REQUEST['blog_id'])) {
+            return;
+        }
+
         $this->blogBasePath = $this->getBlogBaseUrl($_REQUEST['blog_id']);
 
         $file = plugin_dir_path(__FILE__) . 'js/path-fix.js';
@@ -21,30 +25,64 @@ class FixPaths
         $blogId = $_REQUEST['blog_id'];
 
         $data = $this->getGalleries($blogId);
-
-        echo '<table style="width: 90%;">';
+        echo '<h2>Fix Gallery Paths</h2>';
+        echo '<div><strong>Click the [ Test ] button to see if the suggested path works.</strong></div>';
+        echo '<div><strong>When the images appear (i.e., are not broken), use [ Submit ] to update the gallery path.</strong></div><br/>';
+        echo '<table style="width: 90%; border-collapse: collapse;">';
         echo '<thead style="background-color: #d0d0d0">';
         echo '<th style="width: 40%">';
-        echo 'Current Path';
+        echo 'Gallery Path';
         echo '</th>';
         echo '<th style="width: 55%">';
         echo 'Suggested Path';
         echo '</th>';
         echo '<th>';
         echo '</th>';
+        echo '<th>';
+        echo '</th>';
         echo '</thead>';
         foreach ($data as $gallery) {
             $suggestedPath = $this->suggestedPath($gallery['path']);
-            echo '<tr data-gallery="' . $gallery['gid'] . '" style="cursor: pointer;">';
+            echo '<tr data-gallery="' . $gallery['gid'] . '">';
             echo '<td><strong>' . $gallery['path'] . '</strong></td>';
-            echo '<td><input data-gallery="' . $gallery['gid'] . '" type="text" value="' . $suggestedPath . '" style="width: 100%;"></td>';
-            echo '<td><button data-gallery="' . $gallery['gid'] . '">Submit</button></td>';
+            echo '<td><input data-path="' . $gallery['gid'] . '" type="text" value="' . $suggestedPath . '" style="width: 100%;"></td>';
+            echo '<td><button data-test="' . $gallery['gid'] . '" style="cursor: pointer;">Test</button></td>';
+            echo '<td><button data-submit="' . $gallery['gid'] . '" style="cursor: pointer;">Submit</button></td>';
             echo '</tr>';
-            echo '<tr style="display: none;">';
-            echo '<td colspan="3">' . $this->getPictures($blogId, $gallery['gid'], $suggestedPath) . '</td>';
+            echo '<tr>';
+            echo '<td colspan="3"><div data-pictures="' . $gallery['gid'] . '"></div></td>';
             echo '</tr>';
         }
         echo '</table>';
+    }
+
+    public function loadGalleryImages()
+    {
+        $blogId = $_REQUEST['blog_id'];
+        $galleryId = $_REQUEST['gallery_id'];
+        $path = $_REQUEST['path'];
+
+        $pictures = $this->getPictures($blogId, $galleryId, $path);
+
+        wp_send_json($pictures);
+
+        die();
+    }
+
+    public function updateGalleryPath()
+    {
+        global $wpdb;
+
+        $blogId = $_REQUEST['blog_id'];
+        $galleryId = $_REQUEST['gallery_id'];
+        $path = $_REQUEST['path'];
+        $sql = "UPDATE wp_{$blogId}_ngg_gallery SET path = '{$path}' WHERE gid = '{$galleryId}';";
+
+        $wpdb->query($sql);
+
+        wp_send_json(['success' => true]);
+
+        die();
     }
 
     protected function getGalleries(int $blogId): array
@@ -56,33 +94,29 @@ class FixPaths
         return $wpdb->get_results($sql, ARRAY_A);
     }
 
-    protected function getPictures(int $blogId, int $galleryId, string $suggestedPath): string
+    protected function getPictures(int $blogId, int $galleryId, string $suggestedPath): array
     {
         global $wpdb;
-        $html = '';
-//
-//        $sql = "SELECT *  FROM wp_{$blogId}_ngg_pictures WHERE galleryid = {$galleryId}";
-//
-//        $pictures = $wpdb->get_results($sql, ARRAY_A);
-//
-//        $count = 0;
-//        $html .= '<div>';
-//        foreach ($pictures as $picture) {
-//            if ($count % 12 === 0) {
-//                $html .= '</div>';
-//                $html .= '<div>';
-//            }
-//            $html .= '<img src="' . $this->blogBasePath . $suggestedPath . '/' . $picture['filename'] . '" style="height: 50px; padding: 5px;">';
-//
-//            $count++;
-//        }
-//        $html .= '</div>';
 
-        return $html;
+        $pictures = [];
+
+        $sql = "SELECT *  FROM wp_{$blogId}_ngg_pictures WHERE galleryid = {$galleryId}";
+
+        $results = $wpdb->get_results($sql, ARRAY_A);
+
+        foreach ($results as $result) {
+            $pictures[] = $this->getBlogBaseUrl($blogId) . '/' . $suggestedPath . '/' . $result['filename'];
+        }
+
+        return $pictures;
     }
 
-    protected function getBlogBaseUrl(int $blogId): string
+    protected function getBlogBaseUrl(?int $blogId): ?string
     {
+        if (! $blogId) {
+            return null;
+        }
+
         global $wpdb;
 
         $sql = "SELECT *  FROM wp_blogs WHERE blog_id = {$blogId}";

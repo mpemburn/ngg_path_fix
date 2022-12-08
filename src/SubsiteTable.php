@@ -69,10 +69,6 @@ class SubsiteTable extends \WP_List_Table
     public function column_name($item): string
     {
         $text = sprintf('<a href="%s">%s</a>', '/wp-admin/network/admin.php?page=fix-paths&blog_id=' . $item['blog_id'], $item['name']);
-//        $actions = array(
-//            'edit' => sprintf('<a href="/wordpress/wp-admin/network/site-info.php?id=%s">%s</a>', $item['blog_id'], 'Edit'),
-//            'settings' => sprintf('<a href="/wordpress/wp-admin/network/site-settings.php?id=%s">%s</a>', $item['blog_id'], 'Settings'),
-//        );
 
         return sprintf('%1$s', $text);
     }
