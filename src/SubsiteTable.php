@@ -24,20 +24,21 @@ class SubsiteTable extends \WP_List_Table
         $this->_column_headers = $this->get_column_info();
 
         // pagination
-        $options = array(
-            'per_page' => $this->get_items_per_page('sites_per_page', 5),
+        $options = [
+            'per_page' => $this->get_items_per_page('sites_per_page', 20),
             'current_page' => $this->get_pagenum(),
             'orderby' => (isset($_GET['orderby']) && $this->_is_sortable($_GET['orderby'])) ? $_GET['orderby'] : 'blog_id',
             'order' => (isset($_GET['order']) && 'desc' === strtolower($_GET['order'])) ? 'desc' : 'asc'
-        );
+        ];
 
         $data = (new SubsiteData())->getSubsites($options);
 
-        $this->set_pagination_args(array(
+        $this->set_pagination_args([
             'total_items' => count($data),
             'per_page' => $options['per_page']
-        ));
+        ]);
 
+        $data = array_slice($data, (($this->get_pagenum() - 1) * $options['per_page']), $options['per_page']);
 
         $this->items = $data;
     }
