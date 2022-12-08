@@ -8,8 +8,6 @@ class SubsiteData
     {
         global $wpdb;
 
-        $options = AdminPage::clearGeneralOptions($options);
-
         // get all the blog ids from the blogs table
         $blogs = $this->getBlogs();
 
@@ -52,12 +50,6 @@ class SubsiteData
         if ($wpdb->last_error) {
             echo 'DB Error: ' . $wpdb->last_error;
         }
-//        // TODO: Avoid this workaround by fixing SQL
-//        foreach ($records as $key => $blog) {
-//            if ((int)$blog['galleries'] === 0) {
-//                unset($records[$key]);
-//            }
-//        }
 
         return $records;
     }

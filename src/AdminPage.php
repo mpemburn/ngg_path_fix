@@ -21,14 +21,6 @@ class AdminPage
         return self::$instance;
     }
 
-    public static function clearGeneralOptions($options): array
-    {
-        $options['per_page'] = (isset($options['per_page']) && (int)$options['per_page'] > 0) ? $options['per_page'] : 10;
-        $options['current_page'] = (isset($options['current_page']) && (int)$options['current_page'] > 1) ? $options['current_page'] : 1;
-
-        return $options;
-    }
-
     protected function addActions(): void
     {
         add_action('network_admin_menu', [$this, 'addMenuPage']);
@@ -54,10 +46,8 @@ class AdminPage
             'ngg-path-fix',
             [$this, 'showListPage'],
             'dashicons-admin-tools',
-            88
+            90
         );
-
-        add_action('load-' . $hook, [$this, 'addAdminAddOptions']);
     }
 
     public function addPathFixPage(): void
@@ -71,21 +61,11 @@ class AdminPage
         );
     }
 
-    public function addAdminAddOptions(): void
-    {
-        $option = 'per_page';
-        $args = array(
-            'label' => 'Sites',
-            'default' => 10,
-            'option' => 'sites_per_page'
-        );
-
-        add_screen_option($option, $args);
-    }
-
     public function showListPage(): void
     {
+        echo '<div style="max-width: 90%;">';
         $this->listTable->prepare_items();
         $this->listTable->display();
+        echo '</div>';
     }
 }

@@ -31,12 +31,13 @@ class SubsiteTable extends \WP_List_Table
             'order' => (isset($_GET['order']) && 'desc' === strtolower($_GET['order'])) ? 'desc' : 'asc'
         );
 
+        $data = (new SubsiteData())->getSubsites($options);
+
         $this->set_pagination_args(array(
-            'total_items' => $this->blogsCount(),
+            'total_items' => count($data),
             'per_page' => $options['per_page']
         ));
 
-        $data = (new SubsiteData())->getSubsites($options);
 
         $this->items = $data;
     }
