@@ -44,10 +44,13 @@ class FixPaths
         foreach ($data as $gallery) {
             $suggestedPath = $this->suggestedPath($gallery['path']);
             echo '<tr data-gallery="' . $gallery['gid'] . '">';
-            echo '<td><strong>' . $gallery['path'] . '</strong></td>';
+            echo '<td>';
+            echo '    <span data-check="' . $gallery['gid'] . '" style="display: none;">✅</span>';
+            echo '    <strong><span data-current="' . $gallery['gid'] . '">' . $gallery['path'] . '</span></strong>';
+            echo '</td>';
             echo '<td><input data-path="' . $gallery['gid'] . '" type="text" value="' . $suggestedPath . '" style="width: 100%;"></td>';
             echo '<td><button data-test="' . $gallery['gid'] . '" style="cursor: pointer;">Test</button></td>';
-            echo '<td><button data-submit="' . $gallery['gid'] . '" style="cursor: pointer;">Submit</button></td>';
+            echo '<td><button data-submit="' . $gallery['gid'] . '" style="cursor: pointer;" disabled>Submit</button></td>';
             echo '</tr>';
             echo '<tr>';
             echo '<td colspan="3"><div data-pictures="' . $gallery['gid'] . '"></div></td>';

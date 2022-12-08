@@ -11,6 +11,7 @@ jQuery(document).ready(function ($) {
             this.currentGalleryId = this.urlParams.has('gallery_id') ? this.urlParams.get('gallery_id') : null;
 
             this.addListeners();
+            this.showChecks();
 
             if (this.currentGalleryId) {
                 this.getPictures(this.currentGalleryId);
@@ -18,6 +19,7 @@ jQuery(document).ready(function ($) {
         }
 
         getPictures(galleryId) {
+            let self = this;
             let container = $('div[data-pictures="' + galleryId + '"]')
             let path = $('input[data-path="' + galleryId + '"]').val();
 
@@ -29,23 +31,45 @@ jQuery(document).ready(function ($) {
                 dataType: 'json',
                 url: "/wp-admin/admin-ajax.php",
                 data: {
-                    action:'load_gallery_images',
+                    action: 'load_gallery_images',
                     blog_id: this.blogId,
                     gallery_id: galleryId,
                     path: path
                 },
-                success: function(data) {
+                success: function (data) {
+                    // let self = true;
                     let count = 0;
-                    data.forEach(function(picture) {
+                    let errorCount = 0;
+
+                    data.forEach(function (picture) {
                         if (count % 12 === 0) {
                             container.append('<hr/>');
                         }
-                        container.append('<img src="' + picture +'" style="height: 50px; padding: 5px;"/>');
+                        container.append('<img data-image="' + galleryId + '" src="' + picture + '" style="height: 50px; padding: 5px;"/>');
                         count++;
                     });
                     $('#loading').remove();
+
+                    if (self.pathsMatch(galleryId)) {
+                        return;
+                    }
+
+                    self.canSubmit(true, galleryId);
+
+                    let theseImages = $('img[data-image="' + galleryId + '"]');
+                    theseImages.on('error', function () {
+                        errorCount++;
+                        $('#broken_images').remove();
+                        if (theseImages.length === errorCount) {
+                            container.prepend('<h3 id="broken_images">All images are broken.  Path not valid.</h3>');
+                            self.canSubmit(false, galleryId);
+                        } else {
+                            container.prepend('<h3 id="broken_images">Some images are broken but Suggested Path is valid. You can [ Submit ].</h3>');
+                        }
+                    });
+
                 },
-                error: function(msg) {
+                error: function (msg) {
                     console.log(msg);
                 }
             });
@@ -59,22 +83,42 @@ jQuery(document).ready(function ($) {
                 dataType: 'json',
                 url: "/wp-admin/admin-ajax.php",
                 data: {
-                    action:'update_gallery_path',
+                    action: 'update_gallery_path',
                     blog_id: this.blogId,
                     gallery_id: galleryId,
                     path: path
                 },
-                success: function(data) {
+                success: function (data) {
                     let location = document.location;
-                    if (! this.currentGalleryId) {
+                    if (!this.currentGalleryId) {
                         location += '&gallery_id=' + galleryId;
                     }
 
                     document.location = location;
                 },
-                error: function(msg) {
+                error: function (msg) {
                     console.log(msg);
                 }
+            });
+        }
+
+        canSubmit(canIt, galleryId) {
+            $('button[data-submit="' + galleryId + '"]').prop('disabled', ! canIt);
+        }
+
+        pathsMatch(galleryId) {
+            let currentPath = $('span[data-current="' + galleryId + '"]').html();
+            let suggestedPath = $('input[data-path="' + galleryId + '"]').val()
+
+            return currentPath === suggestedPath;
+        }
+
+        showChecks() {
+            let self = this;
+
+            $('span[data-check]').each(function () {
+                let galleryId = $(this).data('check');
+                $('span[data-check="' + galleryId + '"]').toggle(self.pathsMatch(galleryId));
             });
         }
 
