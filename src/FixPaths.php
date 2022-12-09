@@ -152,8 +152,9 @@ class FixPaths
         $html = '';
 
         $sql = "SELECT *  FROM {$this->blogPrefix}posts";
-        $sql .= " WHERE post_status IN('publish', 'inherit')";
-        $sql .= " AND post_content LIKE '%[ngg%id={$galleryId}%]%'";
+        $sql .= " WHERE post_status = 'publish'";
+        $sql .= " AND (post_content LIKE '%[ngg%id={$galleryId}%]%'";
+        $sql .= " OR post_content LIKE '%[slideshow%id={$galleryId}%]%'";
 
         $results = $wpdb->get_results($sql, ARRAY_A);
         if ($results) {
