@@ -5,14 +5,19 @@ namespace Ngg_Path_Fix;
 class FixPaths
 {
     protected ?string $blogBasePath;
+    protected string $blogPrefix;
 
     public function __construct()
     {
+        global $wpdb;
+
         if (! isset($_REQUEST['blog_id'])) {
             return;
         }
+        $blogId = $_REQUEST['blog_id'];
 
-        $this->blogBasePath = $this->getBlogBaseUrl($_REQUEST['blog_id']);
+        $this->blogBasePath = $this->getBlogBaseUrl($blogId);
+        $this->blogPrefix = $wpdb->get_blog_prefix($blogId);
 
         $file = plugin_dir_path(__FILE__) . 'js/path-fix.js';
         $cacheBuster = filemtime($file);
@@ -23,6 +28,7 @@ class FixPaths
     public function render()
     {
         $blogId = $_REQUEST['blog_id'];
+
 
         $data = $this->getGalleries($blogId);
         echo '<h2>Fix Gallery Paths</h2>';
@@ -43,6 +49,7 @@ class FixPaths
         echo '</thead>';
         foreach ($data as $gallery) {
             $suggestedPath = $this->suggestedPath($gallery['path']);
+            $pagesWithGalleries = $this->getPagesWithGalleries($blogId, $gallery['gid']);
             echo '<tr data-gallery="' . $gallery['gid'] . '">';
             echo '<td>';
             echo '    <span data-check="' . $gallery['gid'] . '" style="display: none;">✅</span>';
@@ -53,7 +60,10 @@ class FixPaths
             echo '<td><button data-submit="' . $gallery['gid'] . '" style="cursor: pointer;" disabled>Submit</button></td>';
             echo '</tr>';
             echo '<tr>';
-            echo '<td colspan="3"><div data-pictures="' . $gallery['gid'] . '"></div></td>';
+            echo '<td colspan="3">';
+            echo $pagesWithGalleries;
+            echo '  <div data-pictures="' . $gallery['gid'] . '"></div>';
+            echo '</td>';
             echo '</tr>';
         }
         echo '</table>';
@@ -79,7 +89,7 @@ class FixPaths
         $blogId = $_REQUEST['blog_id'];
         $galleryId = $_REQUEST['gallery_id'];
         $path = $_REQUEST['path'];
-        $sql = "UPDATE wp_{$blogId}_ngg_gallery SET path = '{$path}' WHERE gid = '{$galleryId}';";
+        $sql = "UPDATE {$this->blogPrefix}ngg_gallery SET path = '{$path}' WHERE gid = '{$galleryId}';";
 
         $wpdb->query($sql);
 
@@ -92,9 +102,16 @@ class FixPaths
     {
         global $wpdb;
 
-        $sql = "SELECT *  FROM wp_{$blogId}_ngg_gallery";
+        $sql = "SELECT *  FROM {$this->blogPrefix}ngg_gallery";
 
         return $wpdb->get_results($sql, ARRAY_A);
+    }
+
+    protected function suggestedPath(string $path): string
+    {
+        $newPath = preg_replace('/(wp-content\/)(blogs.dir\/)([\d]+)(\/)(files\/)(.*)/', '$1uploads/sites/$3/$6', $path);
+
+        return $newPath;
     }
 
     protected function getPictures(int $blogId, int $galleryId, string $suggestedPath): array
@@ -103,7 +120,7 @@ class FixPaths
 
         $pictures = [];
 
-        $sql = "SELECT *  FROM wp_{$blogId}_ngg_pictures WHERE galleryid = {$galleryId}";
+        $sql = "SELECT *  FROM {$this->blogPrefix}ngg_pictures WHERE galleryid = {$galleryId}";
 
         $results = $wpdb->get_results($sql, ARRAY_A);
 
@@ -129,10 +146,28 @@ class FixPaths
         return 'https://' . $site['domain'] . $site['path'];
     }
 
-    protected function suggestedPath(string $path): string
+    protected function getPagesWithGalleries(int $blogId, int $galleryId): string
     {
-        $newPath = preg_replace('/(wp-content\/)(blogs.dir\/)([\d]+)(\/)(files\/)(.*)/', '$1uploads/sites/$3/$6', $path);
+        global $wpdb;
+        $html = '';
 
-        return $newPath;
+        $sql = "SELECT *  FROM {$this->blogPrefix}posts WHERE post_status = 'publish' and post_content like '%[ngg%id={$galleryId}%]%'";
+
+        $results = $wpdb->get_results($sql, ARRAY_A);
+        if ($results) {
+            $html = '<hr>';
+            $html .= '<div style="font-weight: bolder;">This gallery is found on page(s):</div>';
+            $html .= '<table>';
+            foreach ($results as $result) {
+                $html .= '<tr><td>';
+                $html .= "<a href=\"{$result['guid']}\" target=\"_blank\">{$result['guid']}</a>";
+                $html .= '</td></tr>';
+            }
+            $html .= '</table>';
+            $html .= '<hr>';
+        }
+
+        return $html;
     }
+
 }

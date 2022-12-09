@@ -11,6 +11,7 @@ class SubsiteTable extends \WP_List_Table
     public function get_columns(): array
     {
         return [
+            'fixed' => __('', 'npf'),
             'blog_id' => __('Blog ID', 'npf'),
             'name' => __('Name', 'npf'),
             'siteurl' => __('URL', 'npf'),
@@ -58,6 +59,7 @@ class SubsiteTable extends \WP_List_Table
     public function get_sortable_columns(): array
     {
         return [
+            'fixed' => ['fixed', true],
             'blog_id' => ['blog_id', true],
             'name' => ['name', false],
             'siteurl' => ['siteurl', false],
@@ -69,6 +71,9 @@ class SubsiteTable extends \WP_List_Table
     public function column_default($item, $columnName): string
     {
         switch ($columnName) {
+            case 'fixed':
+                $value = ($item['fixed'] === $item['galleries']) ? '✅' : '🟩';
+                break;
             case 'name':
                 $name = $item['name'] ?? 'No Title';
                 $path = '/wp-admin/network/admin.php?page=fix-paths&blog_id=' . $item['blog_id'];

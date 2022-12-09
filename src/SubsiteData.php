@@ -31,6 +31,7 @@ class SubsiteData
 					(SELECT option_value FROM {$blogId}options WHERE option_name='siteurl') AS siteurl,
 					(SELECT post_modified FROM {$blogId}posts ORDER BY post_modified DESC LIMIT 1) AS modified,
 					({$galleriesSql}) AS galleries,
+				    (SELECT COUNT(gid) AS gid_count  FROM {$blogId}ngg_gallery WHERE path LIKE '%wp-content/uploads/sites/%') AS fixed,	     
 					CAST({$blog_row->blog_id} AS UNSIGNED INTEGER ) AS blog_id
 			FROM {$blogId}options
 			WHERE option_name = 'home'";

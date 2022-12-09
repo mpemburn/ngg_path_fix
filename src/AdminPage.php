@@ -88,6 +88,7 @@ class AdminPage
     {
         echo '<style>';
         foreach ([
+            'fixed' => '2%',
             'blog_id' => '10%',
             'name' => '20%',
             'modified' => '20%',

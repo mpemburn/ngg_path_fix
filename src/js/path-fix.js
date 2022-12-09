@@ -42,7 +42,7 @@ jQuery(document).ready(function ($) {
                     let errorCount = 0;
 
                     data.forEach(function (picture) {
-                        if (count % 12 === 0) {
+                        if (count > 0 && count % 12 === 0) {
                             container.append('<hr/>');
                         }
                         container.append('<img data-image="' + galleryId + '" src="' + picture + '" style="height: 50px; padding: 5px;"/>');
