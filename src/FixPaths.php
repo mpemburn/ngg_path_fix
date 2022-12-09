@@ -52,15 +52,15 @@ class FixPaths
             $pagesWithGalleries = $this->getPagesWithGalleries($blogId, $gallery['gid']);
             echo '<tr data-gallery="' . $gallery['gid'] . '">';
             echo '<td>';
-            echo '    <span data-check="' . $gallery['gid'] . '" style="display: none;">✅</span>';
-            echo '    <strong><span data-current="' . $gallery['gid'] . '">' . $gallery['path'] . '</span></strong>';
+            echo '    <span data-check="' . $gallery['gid'] . '"></span>';
+            echo '    <span data-current="' . $gallery['gid'] . '" style="font-weight: bolder;">' . $gallery['path'] . '</span>';
             echo '</td>';
             echo '<td><input data-path="' . $gallery['gid'] . '" type="text" value="' . $suggestedPath . '" style="width: 100%;"></td>';
             echo '<td><button data-test="' . $gallery['gid'] . '" style="cursor: pointer;">Test</button></td>';
             echo '<td><button data-submit="' . $gallery['gid'] . '" style="cursor: pointer;" disabled>Submit</button></td>';
             echo '</tr>';
             echo '<tr>';
-            echo '<td colspan="3">';
+            echo '<td colspan="3" style="padding-left: 1rem;">';
             echo $pagesWithGalleries;
             echo '  <div data-pictures="' . $gallery['gid'] . '"></div>';
             echo '</td>';
@@ -151,7 +151,9 @@ class FixPaths
         global $wpdb;
         $html = '';
 
-        $sql = "SELECT *  FROM {$this->blogPrefix}posts WHERE post_status = 'publish' and post_content like '%[ngg%id={$galleryId}%]%'";
+        $sql = "SELECT *  FROM {$this->blogPrefix}posts";
+        $sql .= " WHERE post_status IN('publish', 'inherit')";
+        $sql .= " AND post_content LIKE '%[ngg%id={$galleryId}%]%'";
 
         $results = $wpdb->get_results($sql, ARRAY_A);
         if ($results) {

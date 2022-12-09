@@ -118,7 +118,8 @@ jQuery(document).ready(function ($) {
 
             $('span[data-check]').each(function () {
                 let galleryId = $(this).data('check');
-                $('span[data-check="' + galleryId + '"]').toggle(self.pathsMatch(galleryId));
+                let box = self.pathsMatch(galleryId) ? '✅' : '🟩';
+                $('span[data-check="' + galleryId + '"]').html(box);
             });
         }
 
