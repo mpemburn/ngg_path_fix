@@ -75,14 +75,14 @@ class SubsiteTable extends \WP_List_Table
                 $value = ($item['fixed'] === $item['galleries']) ? '✅' : '🟩';
                 break;
             case 'name':
-                $name = $item['name'] ?? 'No Title';
+                $name = $item['name'] !== '' ? $item['name'] : 'No Title';
                 $path = '/wp-admin/network/admin.php?page=fix-paths&blog_id=' . $item['blog_id'];
                 $text = sprintf('<a href="%s">%s</a>', $path, $name);
 
                 $value = sprintf('%1$s', $text);
                 break;
             case 'siteurl':
-                $value = '<a href="' . $item['siteurl'] . '">' . $item['siteurl'] . '</a>';
+                $value = '<a href="' . $item['siteurl'] . '" target="_blank">' . $item['siteurl'] . '</a>';
                 break;
             case 'modified':
                 $value = date('Y-m-d', strtotime($item['modified']));
