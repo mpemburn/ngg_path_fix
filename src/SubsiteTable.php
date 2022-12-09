@@ -14,8 +14,8 @@ class SubsiteTable extends \WP_List_Table
             'blog_id' => __('Blog ID', 'npf'),
             'name' => __('Name', 'npf'),
             'siteurl' => __('URL', 'npf'),
-            'modified' => __('Last Update', 'npf'),
             'galleries' => __('Galleries', 'npf'),
+            'modified' => __('Last Update', 'npf'),
         ];
     }
 
@@ -48,52 +48,44 @@ class SubsiteTable extends \WP_List_Table
         _e('This network contains no matching blogs.', 'uri');
     }
 
-    public function _is_sortable($column_name): bool
+    public function _is_sortable($columnName): bool
     {
         $cols = $this->get_sortable_columns();
 
-        return (array_key_exists($column_name, $cols));
+        return (array_key_exists($columnName, $cols));
     }
 
     public function get_sortable_columns(): array
     {
-        $sortable_columns = [
-            'blog_id' => ['blog_id', false],
+        return [
+            'blog_id' => ['blog_id', true],
             'name' => ['name', false],
             'siteurl' => ['siteurl', false],
-            'modified' => ['modified', false],
             'galleries' => ['galleries', false],
+            'modified' => ['modified', false],
         ];
-
-        return $sortable_columns;
     }
 
-    public function column_name($item): string
+    public function column_default($item, $columnName): string
     {
-        $text = sprintf('<a href="%s">%s</a>', '/wp-admin/network/admin.php?page=fix-paths&blog_id=' . $item['blog_id'], $item['name']);
+        switch ($columnName) {
+            case 'name':
+                $name = $item['name'] ?? 'No Title';
+                $path = '/wp-admin/network/admin.php?page=fix-paths&blog_id=' . $item['blog_id'];
+                $text = sprintf('<a href="%s">%s</a>', $path, $name);
 
-        return sprintf('%1$s', $text);
-    }
-
-    public function column_default($item, $column_name)
-    {
-        switch ($column_name) {
-            // case 'blog_id':
-            // case 'theme':
-            // case 'pages':
-            // case 'posts':
-            // case 'users':
-            // case 'cats':
+                $value = sprintf('%1$s', $text);
+                break;
+            case 'siteurl':
+                $value = '<a href="' . $item['siteurl'] . '">' . $item['siteurl'] . '</a>';
+                break;
             case 'modified':
-                return date('Y-m-d', strtotime($item['modified']));
+                $value = date('Y-m-d', strtotime($item['modified']));
+                break;
             default:
-                return $item[$column_name];
-            // return print_r( $item, true ) ; //Show the whole array for troubleshooting purposes
+                $value = $item[$columnName];
         }
-    }
 
-    protected function blogsCount(): int
-    {
-        return get_sites(['count' => true, 'archived' => 0]);
+        return $value;
     }
 }

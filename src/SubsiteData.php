@@ -42,6 +42,10 @@ class SubsiteData
             echo 'DB Error: ' . $wpdb->last_error;
         }
 
+        $sorted = array_column($records, $options['orderby']);
+        $direction = strtolower($options['order']) === 'asc' ? SORT_ASC : SORT_DESC;
+        array_multisort($sorted, $direction, $records);
+
         return $records;
     }
 

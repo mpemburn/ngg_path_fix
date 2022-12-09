@@ -38,6 +38,7 @@ class AdminPage
         add_action('wp_ajax_load_gallery_images', [new FixPaths(), 'loadGalleryImages']);
         add_action('wp_ajax_nopriv_update_gallery_path', [new FixPaths(), 'updateGalleryPath']);
         add_action('wp_ajax_update_gallery_path', [new FixPaths(), 'updateGalleryPath']);
+        add_action('admin_head', [$this, 'setColumnWidths']);
     }
 
     public function addListPage(): void
@@ -81,6 +82,20 @@ class AdminPage
         );
 
         add_screen_option($option, $args);
+    }
+
+    public function setColumnWidths(): void
+    {
+        echo '<style>';
+        foreach ([
+            'blog_id' => '10%',
+            'name' => '20%',
+            'modified' => '20%',
+            'galleries' => '10%',
+         ] as $id => $width) {
+            echo "th#{$id} { width: {$width}; }";
+        }
+        echo '</style>';
     }
 
     public function showListPage(): void
