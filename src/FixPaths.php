@@ -150,24 +150,29 @@ class FixPaths
     {
         global $wpdb;
         $html = '';
+        $rows = '';
 
         $sql = "SELECT *  FROM {$this->blogPrefix}posts";
         $sql .= " WHERE post_status = 'publish'";
-        $sql .= " AND (post_content LIKE '%[ngg%id={$galleryId}%]%'";
-        $sql .= " OR post_content LIKE '%[slideshow%id={$galleryId}%]%'";
 
-        $results = $wpdb->get_results($sql, ARRAY_A);
-        if ($results) {
-            $html = '<hr>';
-            $html .= '<div style="font-weight: bolder;">This gallery is found on page(s):</div>';
-            $html .= '<table>';
-            foreach ($results as $result) {
-                $html .= '<tr><td>';
-                $html .= "<a href=\"{$result['guid']}\" target=\"_blank\">{$result['guid']}</a>";
-                $html .= '</td></tr>';
+        $posts = $wpdb->get_results($sql, ARRAY_A);
+
+        if ($posts) {
+            foreach ($posts as $post) {
+                if (preg_match('/(\[nggallery)(.*)(id=' . $galleryId . ')(.*)(])/', $post['post_content'])) {
+                    $rows = '<tr><td>';
+                    $rows .= "<a href=\"{$post['guid']}\" target=\"_blank\">{$post['guid']}</a>";
+                    $rows .= '</td></tr>';
+                }
             }
-            $html .= '</table>';
-            $html .= '<hr>';
+            if ($rows) {
+                $html = '<hr>';
+                $html .= '<div style="font-weight: bolder;">This gallery is found on page(s):</div>';
+                $html .= '<table>';
+                $html .= $rows;
+                $html .= '</table>';
+                $html .= '<hr>';
+            }
         }
 
         return $html;
