@@ -160,8 +160,9 @@ class FixPaths
         if ($posts) {
             foreach ($posts as $post) {
                 if (preg_match('/(\[nggallery)(.*)(id=' . $galleryId . ')(.*)(])/', $post['post_content'])) {
+                    $permalink = get_post_permalink($post['ID']);
                     $rows = '<tr><td>';
-                    $rows .= "<a href=\"{$post['guid']}\" target=\"_blank\">{$post['guid']}</a>";
+                    $rows .= "<a href=\"{$permalink}\" target=\"_blank\">{$permalink}</a>";
                     $rows .= '</td></tr>';
                 }
             }
