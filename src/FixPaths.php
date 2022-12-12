@@ -154,13 +154,14 @@ class FixPaths
 
         $sql = "SELECT *  FROM {$this->blogPrefix}posts";
         $sql .= " WHERE post_status = 'publish'";
-
         $posts = $wpdb->get_results($sql, ARRAY_A);
 
         if ($posts) {
             foreach ($posts as $post) {
                 if (preg_match('/(\[nggallery)(.*)(id=' . $galleryId . ')(.*)(])/', $post['post_content'])) {
+                    switch_to_blog($blogId);
                     $permalink = get_post_permalink($post['ID']);
+
                     $rows = '<tr><td>';
                     $rows .= "<a href=\"{$permalink}\" target=\"_blank\">{$permalink}</a>";
                     $rows .= '</td></tr>';
