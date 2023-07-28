@@ -20,8 +20,12 @@ class SubsiteData
 
             $blogId = $wpdb->get_blog_prefix($blog_row->blog_id);
 
+            if (!$this->tableExists("{$blogId}ngg_gallery")) {
+                continue;
+            }
+
             $galleriesSql = "SELECT COUNT(gid) AS gid_count  FROM {$blogId}ngg_gallery";
-            if (! $this->hasGalleries($galleriesSql)) {
+            if (!$this->hasGalleries($galleriesSql)) {
                 continue;
             }
 
@@ -55,13 +59,31 @@ class SubsiteData
         return get_sites(['archived' => 0]);
     }
 
+    protected function tableExists(string $tableName): bool
+    {
+        global $wpdb;
+
+        $sql = "SELECT COUNT(1) AS count FROM information_schema.tables ";
+        $sql .= "WHERE table_schema='{$wpdb->dbname}' AND table_name='{$tableName}';";
+
+        $results = $wpdb->get_results($sql, ARRAY_A);
+
+        foreach (current($results) as $result) {
+            if ((int) $result === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function hasGalleries(string $sql): bool
     {
         global $wpdb;
 
         $results = $wpdb->get_results($sql, ARRAY_A);
 
-        return (int)current($results)['gid_count'] > 0;
+        return $results ? (int)current($results)['gid_count'] > 0 : false;
     }
 
 }
